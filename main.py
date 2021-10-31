@@ -1,6 +1,6 @@
 import csv
 from db.db import DB
-from flask import Flask, send_file
+from flask import Flask, render_template, request, redirect, url_for
 from pprintpp import pprint
 
 
@@ -40,8 +40,24 @@ app = Flask('Login_Page')
 
 
 @app.route('/')
-def load_main_page():
-    return send_file('routes/index.html')
+def home():
+    return 'Hello world!'
+
+
+@app.route('/welcome')
+def welcome():
+    return render_template('welcome.html')
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        if request.form['username'] != 'masteradmin' or request.form['password'] != 'masteradmin':
+            error = 'Invalid credentials. Please try again.'
+        else:
+            return redirect(url_for('home'))
+    return render_template('login.html', error=error)
 
 
 app.run()
