@@ -1,27 +1,47 @@
-import string
+import csv
 from db.db import DB
+from flask import Flask, send_file
 from pprintpp import pprint
-from random import choice
-from time import sleep
 
 
 db_name = 'my-users.db'
+table_name = 'users'
+
 
 db = DB(db_name)
 
-new_table = 'users_' + ''.join([choice(string.ascii_lowercase) for _ in range(10)])
-db.read_all_entries_from_table(new_table)
-db.create_table(new_table)
+db.read_all_entries_from_table(table_name)
+db.create_table(table_name)
 
-db.insert_into_table(new_table, 1, 'Alice', 26)
-db.insert_into_table(new_table, 2, 'Alex', 28)
-db.insert_into_table(new_table, 3, 'Cristina', 27)
-data = db.read_all_entries_from_table(new_table)
+with open('user_pass.txt', 'r') as f:
+    entities = csv.reader(f)
+    headers = next(entities)
+    user_pass = list(entities)
+
+for i in range(len(user_pass)):
+    db.insert_into_table(table_name, i, user_pass[i][0], user_pass[i][1])
+
+data = db.read_all_entries_from_table(table_name)
 
 for row in data:
     print(row)
 
 pprint([table[1] for table in db.list_all_tables()])
 
-data = db.delete_table(new_table)
-db.delete_db(db_name)
+# data = db.delete_table(table_name)
+# db.delete_db(db_name)
+
+credentials = db.read_all_entries_from_table(table_name)
+for credential in credentials:
+    print(credential[1])  # TODO: make this with params
+
+
+app = Flask('Login_Page')
+
+
+@app.route('/')
+def load_main_page():
+    return send_file('routes/index.html')
+
+
+app.run()
